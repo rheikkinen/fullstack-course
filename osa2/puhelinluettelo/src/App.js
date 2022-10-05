@@ -1,124 +1,167 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
+import personService from './services/persons'
 
 const PersonForm = (props) => {
-  return (
-    <form onSubmit={props.submitFunction}>
-      <div>
-        Name: <input value={props.name}
-                    onChange={props.nameHandler}/>
-      </div>
-      <div>
-        Number: <input value={props.number}
-                      onChange={props.numberHandler}/>
-      </div>
-      <div>
-        <button type='submit'>add</button>
-      </div>
-    </form>
-  )
+	return (
+		<form onSubmit={props.submitFunction}>
+			<div>
+				Name: <input value={props.name}
+					onChange={props.nameHandler} />
+			</div>
+			<div>
+				Number: <input value={props.number}
+					onChange={props.numberHandler} />
+			</div>
+			<div>
+				<button type='submit'>add</button>
+			</div>
+		</form>
+	)
 }
 
-const Person = ({ person }) => {
-  return (
-    <p>{person.name}: {person.number}</p>
-  )
+const Person = ({ person, deletePerson }) => {
+	return (
+		<>
+			<tr>
+				<td>{person.name}</td>
+				<td>{person.number}</td>
+				<td>
+					<button onClick={deletePerson}>delete</button>
+				</td>
+			</tr>
+		</>
+	)
 }
 
-const PersonList = ({ persons }) => {
-  return (
-    <div>
-      {persons.map(person =>
-        <Person key={person.name} person={person} />
-      )}
-    </div>
-  )
+const PersonList = ({ persons, deletePerson }) => {
+	return (
+		<div>
+			<table>
+				<tbody>
+					{persons.map(person =>
+						<Person key={person.name} person={person} deletePerson={() => deletePerson(person.id)} />
+					)}
+				</tbody>
+			</table>
+		</div>
+	)
 }
 
 const Filter = ({ filter, handleFilterChange }) => {
-  return (
-    <div>
-      Filter with <input value={filter}
-                         onChange={handleFilterChange}/>
-    </div>
-  )
+	return (
+		<div>
+			Filter with <input value={filter}
+				onChange={handleFilterChange} />
+		</div>
+	)
 }
 
 const App = () => {
-  console.log('aloitetaan renderöinti...')
-  const [persons, setPersons] = useState([])
-  const [newName, setNewName] = useState('')
-  const [newNumber, setNewNumber] = useState('')
-  const [nameFilter, setNameFilter] = useState('')
+	const [persons, setPersons] = useState([])
+	const [newName, setNewName] = useState('')
+	const [newNumber, setNewNumber] = useState('')
+	const [nameFilter, setNameFilter] = useState('')
 
-  useEffect(() => {
-    console.log('effect')
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        console.log('promise fulfilled')
-        setPersons(response.data)
-      })
-  }, [])
+	useEffect(() => {
+		personService
+			.getAll()
+			.then(initialPersons => {
+				setPersons(initialPersons)
+			})
+	}, [])
 
-  console.log('render', persons.length, 'persons')
+	const addPerson = (event) => {
+		event.preventDefault()
 
-  const addPerson = (event) => {
-    event.preventDefault()
+		if (persons.map(person => person.name).includes(newName)) {
+			if (window.confirm(
+				`${newName} is already added to the phonebook. Replace the old number with the new one?`
+			)) {
+				const person = persons.find(p => p.name === newName)
+				const updatedPerson = { ...person, number: newNumber }
+				const id = person.id
 
-    const nameObject = {
-      name: newName,
-      number: newNumber
-    }
+				personService
+					.update(id, updatedPerson)
+					.then((returnedPerson) => {
+						setPersons(persons.map(person => person.id !== id
+							? person
+							: returnedPerson
+						))
+						setNewName('')
+						setNewNumber('')
+					})
+			}
+		} else {
+			const personObject = {
+				name: newName,
+				number: newNumber
+			}
 
-    if (persons.map(person => person.name).includes(newName)) {
-      alert(`${newName} is already added to the phonebook`)
-    } else {
-      setPersons(persons.concat(nameObject))
-      setNewName('')
-      setNewNumber('')
-    }
-  }
+			personService
+				.create(personObject)
+				.then(returnedPerson => {
+					setPersons(persons.concat(returnedPerson))
+					setNewName('')
+					setNewNumber('')
+				})
+		}
+	}
 
-  const handleNameChange = (event) => {
-    setNewName(event.target.value)
-  }
+	const deletePerson = (id) => {
+		const person = persons.find(p => p.id === id)
 
-  const handleNumberChange = (event) => {
-    setNewNumber(event.target.value)
-  }
+		if (window.confirm(
+			`Do you really want to delete ${person.name} from the phonebook?`
+		)) {
+			personService
+				.remove(id)
+				.then(
+					setPersons(persons.filter(person => person.id !== id))
+				)
+		}
 
-  const handleFilterChange = (event) => {
-    setNameFilter(event.target.value)
-  }
+	}
 
-  const personsToShow = (nameFilter === '')
-    ? persons
-    : persons.filter(person => 
-        person.name
-        .toLowerCase()
-        .includes(nameFilter.toLowerCase()))
+	const handleNameChange = (event) => {
+		setNewName(event.target.value)
+	}
 
-  return (
-    <div>
-      <h1>Phonebook</h1>
-      
-      <h2>Add new</h2>
+	const handleNumberChange = (event) => {
+		setNewNumber(event.target.value)
+	}
 
-      <PersonForm submitFunction={addPerson}
-                  name={newName}
-                  nameHandler={handleNameChange}
-                  number={newNumber}
-                  numberHandler={handleNumberChange}/>
+	const handleFilterChange = (event) => {
+		setNameFilter(event.target.value)
+	}
 
-      <h2>Numbers</h2>
-      
-      <Filter filter={nameFilter} 
-              handleFilterChange={handleFilterChange}/>
-      
-      <PersonList persons={personsToShow} />
-    </div>
-  )
+	const personsToShow = (nameFilter === '')
+		? persons
+		: persons.filter(person =>
+			person.name
+				.toLowerCase()
+				.includes(nameFilter.toLowerCase()))
+
+	return (
+		<div>
+			<h1>Phonebook</h1>
+
+			<h2>Add new</h2>
+
+			<PersonForm submitFunction={addPerson}
+				name={newName}
+				nameHandler={handleNameChange}
+				number={newNumber}
+				numberHandler={handleNumberChange} />
+
+			<h2>Numbers</h2>
+
+			<Filter filter={nameFilter}
+				handleFilterChange={handleFilterChange} />
+
+			<PersonList persons={personsToShow} deletePerson={deletePerson} />
+		</div>
+	)
 }
 
 export default App
