@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import personService from './services/persons'
+import { Notification } from './components/Notification'
 
 const PersonForm = (props) => {
 	return (
@@ -61,6 +62,7 @@ const App = () => {
 	const [newName, setNewName] = useState('')
 	const [newNumber, setNewNumber] = useState('')
 	const [nameFilter, setNameFilter] = useState('')
+	const [successMessage, setSuccessMessage] = useState(null)
 
 	useEffect(() => {
 		personService
@@ -91,6 +93,14 @@ const App = () => {
 						setNewName('')
 						setNewNumber('')
 					})
+					.finally(() => {
+						setSuccessMessage(
+							`Phone number of ${person.name} was updated succesfully!`
+						)
+						setTimeout(() => {
+							setSuccessMessage(null)
+						}, 5000)
+					})
 			}
 		} else {
 			const personObject = {
@@ -104,6 +114,14 @@ const App = () => {
 					setPersons(persons.concat(returnedPerson))
 					setNewName('')
 					setNewNumber('')
+				})
+				.finally(() => {
+					setSuccessMessage(
+						`Added ${personObject.name} to the phonebook!`
+					)
+					setTimeout(() => {
+						setSuccessMessage(null)
+					}, 5000)
 				})
 		}
 	}
@@ -119,8 +137,16 @@ const App = () => {
 				.then(
 					setPersons(persons.filter(person => person.id !== id))
 				)
+				.finally(() => {
+					setSuccessMessage(
+						`${person.name} was deleted succesfully!`
+					)
+					setTimeout(() => {
+						setSuccessMessage(null)
+					}, 5000)
+				}
+				)
 		}
-
 	}
 
 	const handleNameChange = (event) => {
@@ -145,6 +171,8 @@ const App = () => {
 	return (
 		<div>
 			<h1>Phonebook</h1>
+
+			<Notification message={successMessage} />
 
 			<h2>Add new</h2>
 
