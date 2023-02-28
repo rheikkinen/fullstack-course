@@ -1,15 +1,24 @@
 import '../index.css'
 
-const Notification = ({ message }) => {
-    if (message === null) {
+const Notification = ({ notification }) => {
+    if (notification === null) {
         return null
     }
 
-    return (
-        <div className="notification success">
-            {message}
-        </div>
-    )
+    if (notification.type === 'success') {
+        return (
+            <div className="notification success">
+                {notification.message}
+            </div>
+        )
+    } else if (notification.type === 'error') {
+        return (
+            <div className="notification error">
+                {notification.message}
+            </div>
+        )
+    }
+
 }
 
 export { Notification }

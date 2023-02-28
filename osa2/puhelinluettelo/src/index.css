@@ -13,3 +13,9 @@
     border-color: green;
     color: darkgreen;
 }
+
+.notification.error {
+    background-color: rgb(239, 95, 95);
+    border-color: rgb(150, 27, 2);
+    color: rgb(78, 1, 1);
+}

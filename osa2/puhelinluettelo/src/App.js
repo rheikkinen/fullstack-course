@@ -6,12 +6,18 @@ const PersonForm = (props) => {
 	return (
 		<form onSubmit={props.submitFunction}>
 			<div>
-				Name: <input value={props.name}
-					onChange={props.nameHandler} />
+				<p>
+					Name:<br></br>
+					<input value={props.name}
+						onChange={props.nameHandler} />
+				</p>
 			</div>
 			<div>
-				Number: <input value={props.number}
-					onChange={props.numberHandler} />
+				<p>
+					Number: <br></br>
+					<input value={props.number}
+						onChange={props.numberHandler} />
+				</p>
 			</div>
 			<div>
 				<button type='submit'>add</button>
@@ -62,7 +68,7 @@ const App = () => {
 	const [newName, setNewName] = useState('')
 	const [newNumber, setNewNumber] = useState('')
 	const [nameFilter, setNameFilter] = useState('')
-	const [successMessage, setSuccessMessage] = useState(null)
+	const [notification, setNotification] = useState(null)
 
 	useEffect(() => {
 		personService
@@ -94,11 +100,14 @@ const App = () => {
 						setNewNumber('')
 					})
 					.finally(() => {
-						setSuccessMessage(
-							`Phone number of ${person.name} was updated succesfully!`
+						setNotification(
+							{
+								type: 'success',
+								message: `Phone number of ${person.name} was updated succesfully!`
+							}
 						)
 						setTimeout(() => {
-							setSuccessMessage(null)
+							setNotification(null)
 						}, 5000)
 					})
 			}
@@ -116,11 +125,21 @@ const App = () => {
 					setNewNumber('')
 				})
 				.finally(() => {
-					setSuccessMessage(
-						`Added ${personObject.name} to the phonebook!`
-					)
+					setNotification({
+						type: 'success',
+						message: `Added ${personObject.name} to the phonebook!`
+					})
 					setTimeout(() => {
-						setSuccessMessage(null)
+						setNotification(null)
+					}, 5000)
+				})
+				.catch(error => {
+					setNotification({
+						type: 'error',
+						message: error.response.data.error
+					})
+					setTimeout(() => {
+						setNotification(null)
 					}, 5000)
 				})
 		}
@@ -138,11 +157,14 @@ const App = () => {
 					setPersons(persons.filter(person => person.id !== id))
 				)
 				.finally(() => {
-					setSuccessMessage(
-						`${person.name} was deleted succesfully!`
+					setNotification(
+						{
+							type: 'success',
+							message: `${person.name} was deleted succesfully!`
+						}
 					)
 					setTimeout(() => {
-						setSuccessMessage(null)
+						setNotification(null)
 					}, 5000)
 				}
 				)
@@ -172,7 +194,7 @@ const App = () => {
 		<div>
 			<h1>Phonebook</h1>
 
-			<Notification message={successMessage} />
+			<Notification notification={notification} />
 
 			<h2>Add new</h2>
 
