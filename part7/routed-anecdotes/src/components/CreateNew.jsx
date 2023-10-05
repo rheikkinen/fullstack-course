@@ -16,6 +16,18 @@ const CreateNew = (props) => {
     })
   }
 
+  const resetForm = () => {
+    content.reset()
+    author.reset()
+    info.reset()
+  }
+
+  const margins = {
+    marginRight: 5,
+    marginTop: 5,
+    marginBottom: 10
+  }
+
   return (
     <div>
       <h2>create a new anecdote</h2>
@@ -32,8 +44,11 @@ const CreateNew = (props) => {
           url for more info
           <input {...info} />
         </div>
-        <button>create</button>
+        <button style={margins}>create</button>
+        <button style={margins} type='button' onClick={resetForm}>reset</button>
       </form>
+
+
     </div>
   )
 
