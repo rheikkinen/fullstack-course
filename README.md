@@ -5,4 +5,4 @@
 ### Blog List App
 [Parts 4 and 5](https://github.com/rheikkinen/bloglist-fullstack/tree/part-5)
 
-[The rest of part 7](https://github.com/rheikkinen/bloglist-fullstack/tree/part-7)
+[The rest of part 7](https://github.com/rheikkinen/bloglist-fullstack)
